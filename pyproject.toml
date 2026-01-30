@@ -1,0 +1,20 @@
+[project]
+name = "kokoro-tts"
+version = "1.0.3"
+description = "Kokoro TTS Wyoming Server"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "kokoro-onnx>=0.3.0",
+    "onnxruntime>=1.16.0",
+    "wyoming>=1.5.0",
+    "numpy>=1.24.0",
+    "sentence-stream>=0.1.1",
+]
+
+[project.scripts]
+kokoro-tts = "kokoro_tts.__main__:run"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
