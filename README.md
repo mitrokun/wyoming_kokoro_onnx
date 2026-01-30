@@ -1,5 +1,5 @@
 # wyoming [kokoro_onnx](https://github.com/thewh1teagle/kokoro-onnx)
-Since popular Kokoro implementations for Home Assistant still don't support streaming, I'll create my own server version. I'll also experiment with UV.
+Since popular Kokoro implementations for Home Assistant still don't support streaming, I'll create my own server version. I'll also experiment with [uv](https://docs.astral.sh/uv/getting-started/installation/).
 ```
 git clone https://github.com/mitrokun/wyoming_kokoro_onnx
 cd wyoming_kokoro_onnx
