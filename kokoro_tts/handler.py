@@ -29,13 +29,9 @@ class KokoroEventHandler(AsyncEventHandler):
         
         self.sbd = SentenceBoundaryDetector()
         self._current_voice = "af_heart"
-        
-        # Очередь и воркер
         self._queue: asyncio.Queue[str | None] = asyncio.Queue()
         self._worker_task: asyncio.Task | None = None
         self._audio_started = False
-        
-        # Флаг для предотвращения дублирования
         self._is_streaming_session = False 
 
     async def handle_event(self, event: Event) -> bool:
@@ -43,18 +39,15 @@ class KokoroEventHandler(AsyncEventHandler):
             await self.write_event(self.wyoming_info_event)
             return True
 
-        # --- 1. Одиночный запрос (Synthesize) ---
         if Synthesize.is_type(event.type):
-            # ГЛАВНОЕ: Если мы уже обработали это через стриминг чанков, игнорируем
             if self._is_streaming_session:
-                _LOGGER.debug("Ignoring Synthesize event (already handled via streaming)")
                 return True
             
             synthesize = Synthesize.from_event(event)
-            _LOGGER.info(f"Single synthesis request: {synthesize.text[:50]}...")
+            _LOGGER.debug(f"Single synthesis request: {synthesize.text[:50]}...")
             
             self._current_voice = synthesize.voice.name if synthesize.voice else "af_heart"
-            self.sbd = SentenceBoundaryDetector() # Сброс буфера
+            self.sbd = SentenceBoundaryDetector()
             
             await self._start_worker()
             for s in self.sbd.add_chunk(synthesize.text):
@@ -66,42 +59,33 @@ class KokoroEventHandler(AsyncEventHandler):
             await self._stop_worker()
             return True
 
-        # --- 2. Начало стриминга (SynthesizeStart) ---
         if SynthesizeStart.is_type(event.type):
-            self._is_streaming_session = True # Входим в режим стриминга
-            
+            self._is_streaming_session = True
             start = SynthesizeStart.from_event(event)
             self._current_voice = start.voice.name if start.voice else "af_heart"
-            _LOGGER.info(f"Text stream STARTED (voice: {self._current_voice})")
+            _LOGGER.debug(f"Text stream STARTED (voice: {self._current_voice})")
             
-            self.sbd = SentenceBoundaryDetector() # Свежий детектор для новой сессии
+            self.sbd = SentenceBoundaryDetector()
             self._audio_started = False
             await self._start_worker()
             return True
 
-        # --- 3. Чанки текста ---
         if SynthesizeChunk.is_type(event.type):
             if not self._is_streaming_session:
                 return True
-                
             chunk = SynthesizeChunk.from_event(event)
             for sentence in self.sbd.add_chunk(chunk.text):
-                _LOGGER.debug(f"Queuing sentence: {sentence}")
                 await self._queue.put(sentence)
             return True
 
-        # --- 4. Конец стриминга ---
         if SynthesizeStop.is_type(event.type):
             if not self._is_streaming_session:
                 return True
-
-            _LOGGER.info("Text stream STOP received")
+            _LOGGER.debug("Text stream STOP received")
             rem = self.sbd.finish()
             if rem:
                 await self._queue.put(rem)
-            
             await self._stop_worker()
-            
             return True
 
         return True
@@ -117,7 +101,6 @@ class KokoroEventHandler(AsyncEventHandler):
             self._worker_task = None
 
     async def _synthesize_worker(self):
-        """Фоновый синтезатор: берет предложения из очереди."""
         _LOGGER.debug("Synthesis worker started")
         try:
             while True:
@@ -129,7 +112,7 @@ class KokoroEventHandler(AsyncEventHandler):
                 if not clean_text:
                     continue
 
-                _LOGGER.info(f"Synthesizing: '{clean_text}'")
+                _LOGGER.debug(f"Synthesizing: '{clean_text}'")
                 start_t = time.perf_counter()
                 
                 first_chunk = True
@@ -149,7 +132,7 @@ class KokoroEventHandler(AsyncEventHandler):
             
             await self.write_event(SynthesizeStopped().event())
 
-        except Exception as e:
+        except Exception:
             _LOGGER.exception("Error in synthesis worker")
         finally:
             _LOGGER.debug("Synthesis worker stopped")
