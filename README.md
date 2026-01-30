@@ -14,3 +14,7 @@ uvx --from . kokoro-tts
 ```
 
 The model will be downloaded on the first launch, the server will start on port `10210`.
+
+---
+Overall, there are some interesting English voices here, but for other languages ​​I'd look for a different engine. For Spanish, Portuguese, and French, I'd prefer [supertonic](https://github.com/mitrokun/wyoming_supertonic). It has a much better quality/performance ratio.
+
