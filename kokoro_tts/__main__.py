@@ -63,7 +63,7 @@ async def main() -> None:
         wyoming_voices.append(
             TtsVoice(
                 name=voice_id,
-                description=f"Kokoro voice {voice_id}",
+                description=f"{voice_id}",
                 attribution=Attribution(name="Hexgrad", url="https://huggingface.co/hexgrad/Kokoro-82M"),
                 installed=True,
                 version=__version__,
