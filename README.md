@@ -6,14 +6,14 @@ cd wyoming_kokoro_onnx
 ```
 Localize the entire cache in the working directory.
 ```
-UV_CACHE_DIR=.uv_cache uvx --from . kokoro-tts
+UV_CACHE_DIR=.uv_cache UV_CACHE_DIR=.uv_cache uv run kokoro-tts
 ```
 If this doesn't matter to you, you can use
 ```
-uvx --from . kokoro-tts
+uv run kokoro-tts 
 ```
 
-The model will be downloaded on the first launch, the server will start on port `10210`.
+The model will be downloaded on the first launch, the server will start on port `10210`. Use `--uri 'tcp://0.0.0.0:10222'` to configure the port
 
 ---
 Overall, there are some interesting English voices here, but for other languages ​​I'd look for a different engine. For Spanish, Portuguese, and French, I'd prefer [supertonic](https://github.com/mitrokun/wyoming_supertonic). It has a much better quality/performance ratio.
